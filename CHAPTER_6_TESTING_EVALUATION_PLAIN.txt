@@ -1,0 +1,121 @@
+Chapter 6: Testing and Evaluation
+
+This chapter is where I present what I actually tested, what worked, and what I had to let go of. When I wrote Chapter 1, I set out objectives that sounded right at the time: assess accuracy, false positive rate, detection latency. Midway through building the thing, I realised some of that was wishful thinking. I didn't have a labelled dataset. I didn't have participants for a formal study. I was working on my own. So I had to step back and ask myself what I could realistically show. The answer: that behavioural capture works, that the heuristics do what they're meant to do, and that the system flags the right kind of patterns. It's less than I originally aimed for, but it's honest. What follows mixes the technical detail with the personal side of that decision.
+
+6.1 The Initial Idea and Why I Chose Black Box Testing
+
+When I planned the testing, I had a few options. I could have set up unit tests (Jest, Vitest, JUnit) and spent time making the code testable. I could have written integration tests that hit the API with Postman or scripts. I could have gone white box and stepped through every function. Instead I went with black box testing: treat the system as a closed box, interact with it like a user would, and see what comes out. Click on the page, check the dashboard. That's it.
+
+The honest reason is time and scope. I'm one person. Adding a test framework meant restructuring code, writing mocks, maintaining a suite. The prototype's real value is whether a click on the phishing sim turns up in the dashboard. Unit tests on isolated functions wouldn't answer that directly. Black box testing was therefore selected as the most feasible approach. This choice entailed the absence of automated regression testing; any future changes would require manual verification.
+
+Pros of the initial testing plan. It was fast. No setup, no new tooling. I could focus on building. It validated the thing that mattered: end to end behaviour. Cons. No safety net for future changes. I might miss edge cases. It doesn't look as rigorous as a test suite might. But for a solo dissertation prototype, it felt like the right call.
+
+I used Chrome and Chrome DevTools throughout. Network tab to watch POST requests, Console for errors, Application tab to check sessionStorage when jumping from the phishing sim to the dashboard. I built a tiny test page (test-events.html) with a button, a text input, and a scrollable area. Each interaction sends an event and shows green "Event sent" or red "Failed". That let me verify each event type without running the full sim. Backend on 8080, frontend on 5173 via Vite. When I needed to test failure modes, I just stopped the backend.
+
+6.2 What I Actually Tested
+
+Table 6.1 summarises the test cases executed during black box testing. Each test case corresponds to a functional area and was validated manually in Chrome. The Notes column records cases where a test failed initially and was fixed during development.
+
+Table 6.1 Black box test cases executed
+
+| Test ID | Test Description | Expected Result | Validated | Notes |
+|---------|------------------|-----------------|-----------|-------|
+| TC1 | First interaction: act within 2 seconds of load | first_interaction with timeSincePageLoadMs under 2000 | Yes | |
+| TC2 | First interaction: wait 5+ seconds before acting | first_interaction with timeSincePageLoadMs 5000+ | Yes | |
+| TC3 | First interaction fires once per session | Exactly one first_interaction per session in dashboard | Yes | |
+| TC4 | Click on interactive elements (Gmail, search box, links) | click events with element.tag (A, INPUT, etc.) | Yes | Failed initially: helper walked up to wrong parent; fixed selector to nearest a, button, input, textarea |
+| TC5 | Click on empty space | click event with element null | Yes | |
+| TC6 | Keydown in search box and address bar | keydown events captured | Yes | |
+| TC7 | Scroll depth: full scroll | maxDepthPercent 100 | Yes | Failed initially: test page uses div scroll, sim uses window; div used scrollTop/clientHeight; sim had wrong scrollHeight for short pages |
+| TC8 | Scroll depth: partial scroll | maxDepthPercent around 50 | Yes | Same fix as TC7 |
+| TC9 | Session end: close tab | session_end event present when dashboard opened | Yes | Failed initially: sendBeacon not reliable in some contexts; added fetch with keepalive fallback |
+| TC10 | Event transmission with backend running | Events reach server; Network tab shows 200/201 | Yes | |
+| TC11 | Event transmission with backend stopped | Requests fail; client does not block user | Yes | |
+| TC12 | Dashboard: single session | Session selector hidden | Yes | |
+| TC13 | Dashboard: multiple sessions | Dropdown with session id, count, last activity | Yes | |
+| TC14 | Risk display: fast interaction + low scroll + typing | Higher risk score and suspicious classification | Yes | Failed initially: threshold too strict; fast first interaction not flagged until 2 s cutoff added |
+| TC15 | Risk display: slower, deliberate interaction | Lower risk score and normal classification | Yes | |
+
+6.2.1 Failures Encountered and Fixes
+
+Not all tests passed on the first run. The following test cases failed initially: TC4, TC7, TC8, TC9, and TC14. Four areas required debugging before validation. Documenting them here reflects the iterative nature of the development and gives a realistic picture of what was involved.
+
+TC4: Click element capture. When I first tested clicks on the Gmail shortcut and other interactive elements, the dashboard sometimes showed element null or the wrong tag. The DOM helper was walking up the tree to find the nearest interactive parent, but it was stopping at a wrapper div or returning the wrong node. I fixed it by tightening the selector to walk up only until it finds an a, button, input, or textarea. After that change, TC4 and TC5 both passed.
+
+TC7 and TC8: Scroll depth. The phishing sim uses window scroll (scrollY, innerHeight, scrollHeight), but the test-events page uses a scrollable div. Initially the scroll depth calculation was wrong in both: the test page was using scrollTop/clientHeight/scrollHeight on the div but the formula was inverted in one place, and the main sim sometimes returned values over 100 when the page was shorter than the viewport. I corrected the formula (scrollY + innerHeight) / scrollHeight capped at 1, and ensured the test page used the div's own scroll metrics. Full and partial scroll then produced the expected values.
+
+TC9: Session end. The session_end event is sent on beforeunload using sendBeacon so it survives tab close. In some browser contexts (e.g. certain dev setups or when navigating away quickly), sendBeacon did not always fire or the request was cancelled. The session_end event was missing from the dashboard. I added a fetch fallback with keepalive: true. When sendBeacon is unavailable or fails, the fetch request completes in the background. After that, TC9 passed consistently.
+
+TC14: Risk display thresholds. Fast first interaction plus low scroll and typing should produce a high risk score. Initially it didn't. The heuristic for "very fast first interaction" was too loose; sessions with a 3 or 4 second delay were still getting high scores when they shouldn't, and genuinely fast sessions weren't standing out. I introduced a 2 second cutoff: first interaction under 2 seconds adds to the risk score. Once that threshold was in place, TC14 and TC15 produced the expected contrast.
+
+I went through each event type one by one.
+
+First interaction. I tried two scenarios: (a) load the page, wait under 2 seconds, then click or type; (b) load the page, wait 5 or more seconds, then click. In (a) the timeSincePageLoadMs was under 2000; in (b) it was 5000 or higher. The event fired only once per session. I checked the dashboard and confirmed exactly one first_interaction per session. Good.
+
+Click. I clicked the Gmail shortcut, the search box, the address bar, random links. The dashboard showed element tags (A, INPUT, etc.). Clicks on empty space produced element null. The DOM helper that finds the nearest interactive parent worked as intended.
+
+Keydown. Typing in the search box and address bar produced keydown events. I didn't store key values (by design, to avoid capturing anything sensitive). Rapid typing produced multiple events; each went through.
+
+Scroll depth. I scrolled to the bottom and got maxDepthPercent 100. Halfway scrolls gave values around 50. The listener uses passive: true so no scroll jank. Fine.
+
+Session end. I did a session, closed the tab, then opened the dashboard. The session_end event was there. sendBeacon handles it when available; when it wasn't (e.g. in some setups), the fetch fallback with keepalive kicked in.
+
+For transmission, I ran the phishing sim and the test events page. With the backend running, events reached the server. Network tab showed 200/201. The test page went green. I opened http://localhost:8080/api/behavior-events in another tab and saw the event array. With the backend stopped, requests failed. The client didn't retry; it just swallowed the error so the user wasn't blocked. That was intentional. I'd rather not freeze the page than guarantee every event gets through.
+
+For the dashboard, I tested loading with events, with no events, and with the backend down. Session selection: one session (dropdown hidden), multiple sessions (dropdown with id, count, last activity). Switching sessions updated the risk card and timeline without a reload. URL param ?session=xyz worked. Coming from the phishing sim via "Session dashboard" preselected the current session correctly. Risk display: fast first interaction plus low scroll and typing gave higher scores; slower, deliberate interaction gave lower scores. Colour coding matched. Edge case: a session with no events fell back to showing the last 50 from the full list so something was always shown.
+
+6.3 Mid Project Realisations: The Initial Idea vs What I Could Actually Do
+
+Here's where it gets personal. When I wrote Objective 4, I genuinely thought I could "assess accuracy, false positive rate, and detection latency." It sounded like the right thing to say. Accuracy and false positive rate imply you have ground truth: a set of sessions where you know who was a phishing victim and who wasn't. I don't have that. Creating it would mean a formal user study: recruit people, get ethics approval, run controlled tasks, label the data. That's a whole project on its own. I'm one person with a dissertation deadline.
+
+Pros of the initial idea. It was ambitious. It would have given solid numbers. It would have looked more "proper" in a methods section. Cons. It assumed resources I didn't have. It would have stretched the timeline badly. And honestly, by the time I realised it, I was already deep in implementation. Pivoting to a full user study would have meant stopping everything.
+
+So I reframed. Instead of quantifying accuracy, I validated that the heuristics behave as designed: sessions that match the patterns (fast first action, low scroll with typing) get higher scores; sessions that don't get lower scores. It's qualitative. It's not precision or recall. But it's what I could do, and it's honest. I also acknowledged that false positives are possible. A careful user who types quickly after a quick scan might get flagged. I can't put a number on how often that happens.
+
+Pros of the reframed approach. It's achievable. It demonstrates feasibility. It's transparent about limitations. It still answers the research question in a meaningful way: behavioural monitoring can capture patterns that static analysis misses. Cons. No hard numbers. Some might say the evaluation is thin. I'd say it's realistic for what the project is.
+
+Objective 5 (usability of risk outputs) got a similar treatment. I didn't run a formal usability study. I showed the dashboard to a few people and asked if they understood the risk card and the factors. They said yes. That's informal. A proper study would need structured tasks and questionnaires. I deprioritised that in favour of making sure the system actually worked. Again, a trade off I had to accept.
+
+6.4 Results: What Worked
+
+Event capture works. All five event types are recorded and sent. Payload structure matches the design. Session ids are unique. Events line up with the right sessions.
+
+Event transmission is reliable when the backend is up. sendBeacon gets session_end out on tab close. I didn't see any lost events during normal use. When the backend was down, failures were swallowed; the user stayed unblocked.
+
+Dashboard works. Risk scores, classifications, and factors show up when the data is there. Colour coding, session selection, event timeline all behave. Error states show messages like "Failed to load events. Is the backend running?" when things go wrong.
+
+6.5 Evaluation Against the Research Question
+
+Chapter 1 asked: Can a lightweight behaviour based monitoring system detect phishing relevant interaction patterns more effectively than static preload analysis alone?
+
+I can't say "more effectively" in a quantified way. I didn't run a head to head against static tools. What I can say is that behavioural monitoring is feasible. Static analysis runs before or at page load. It can't see what happens during a session. My prototype captures in session behaviour and turns it into risk feedback. The patterns I flag (very fast first interaction, low scroll with input, high action density) are invisible to static tools. So the claim is complementarity: behavioural monitoring adds a dimension. Whether it improves detection in practice would need a proper study. That's for later.
+
+6.6 Evaluation Against the Objectives
+
+Objective 4. Partially met. I used realistic scenarios. I couldn't quantify accuracy or false positive rate. I confirmed detection latency is effectively zero when the user opens the dashboard. I reframed to qualitative heuristic validation. Honest and documented.
+
+Objective 5. Partially met. I designed for clarity. Informal feedback was positive. No formal usability study. Another trade off.
+
+Objective 6. Met. I've documented limitations and future improvements below.
+
+6.7 Limitations
+
+No formal user study. I tested myself and a few informal viewers. Real users might behave differently.
+
+No ground truth. No labelled dataset. No precision, recall, or F1. The evaluation is qualitative.
+
+Rule based only. Simple heuristics. ML might do better. The design leaves room for that later.
+
+Simulated environment. The phishing page mimics search and login. I didn't test other scenarios like fake notifications or invoice scams.
+
+Backend dependency. If the backend is down, nothing gets stored. No offline capture or deferred sync.
+
+Testing coverage. No automated regression. Chrome only. No performance or load testing. No accessibility audit. It's a snapshot, not a guarantee.
+
+6.8 Future Improvements
+
+A proper user study with labelled data could give real numbers. ML could improve discrimination. Broader phishing scenarios could test generalisability. Offline support would help. Automated tests would protect against regressions. I've listed these so the next person (or future me) has somewhere to start.
+
+6.9 Chapter Summary
+
+This chapter has outlined the testing approach I used, the tests I ran, and how the results lined up with the research question and objectives. I used manual black box testing in Chrome and went through each event type, transmission path, and dashboard behaviour. Mid project, some of the original objectives had to be reframed; what I could realistically do was qualitative validation rather than quantified accuracy. The testing so far suggests that behavioural monitoring is feasible and can produce interpretable risk feedback. Limitations and future work are documented above. The following chapter continues with the conclusion.

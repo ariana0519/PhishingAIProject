@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhishShield AI – Wireframes</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; color: #333; }
+    h1 { font-size: 1.25rem; margin-bottom: 2rem; color: #333; }
+    .wireframe { background: #fff; border: 2px solid #999; border-radius: 4px; padding: 1.5rem; margin-bottom: 2rem; max-width: 800px; }
+    .wireframe h2 { font-size: 0.9rem; margin: 0 0 1rem 0; color: #666; font-weight: 600; }
+    .wf-box { border: 1px solid #999; padding: 0.5rem 1rem; margin: 0.25rem 0; }
+    .wf-dashed { border: 1px dashed #999; padding: 0.75rem; margin: 0.5rem 0; color: #666; }
+    .wf-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin: 0.5rem 0; }
+    .wf-shortcut { width: 60px; height: 60px; border: 1px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; text-align: center; }
+    .wf-search { border: 1px solid #999; border-radius: 24px; padding: 0.75rem 1.25rem; width: 100%; max-width: 500px; margin: 0.5rem auto; display: block; }
+    .wf-tab { border: 1px solid #999; padding: 0.4rem 1rem; border-radius: 8px 8px 0 0; font-size: 0.8rem; }
+    .wf-nav { display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+    .wf-nav-btn { width: 28px; height: 28px; border: 1px solid #999; border-radius: 50%; }
+    .wf-addr { flex: 1; border: 1px solid #999; border-radius: 24px; padding: 0.5rem 1rem; max-width: 400px; }
+    .wf-risk { border-left: 4px solid #dc3545; padding: 1rem; margin: 0.5rem 0; background: #f9f9f9; }
+    .wf-event-row { border-bottom: 1px solid #ddd; padding: 0.5rem 0; font-size: 0.85rem; display: flex; gap: 1rem; }
+    .wf-stat { border: 1px solid #999; padding: 1rem; min-width: 100px; text-align: center; }
+    .text-center { text-align: center; }
+    .text-muted { color: #666; font-size: 0.85rem; }
+    @media print { .wireframe { break-inside: avoid; page-break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <h1>PhishShield AI – Wireframes for Dissertation</h1>
+  <p class="text-muted">Open this file in a browser and take screenshots for Figure 4.4 and dashboard figures.</p>
+
+  <!-- Wireframe 1: Phishing Simulation -->
+  <div class="wireframe">
+    <h2>Figure 4.4 – Phishing simulation interface (Google-style homepage)</h2>
+    <div class="wf-row">
+      <div class="wf-tab">New Tab</div>
+      <div class="wf-tab">+</div>
+    </div>
+    <div class="wf-nav">
+      <div class="wf-nav-btn"></div>
+      <div class="wf-nav-btn"></div>
+      <div class="wf-nav-btn"></div>
+      <div class="wf-addr">Search Google or type a URL</div>
+      <div class="wf-box" style="padding: 0.4rem 0.9rem;">Session dashboard</div>
+    </div>
+    <div class="text-center" style="margin-top: 2rem;">
+      <div class="wf-box" style="border: none; font-size: 2.5rem; margin-bottom: 1rem;">Google</div>
+      <div class="wf-search text-muted">Search Google or type a URL</div>
+      <div class="wf-row" style="justify-content: center; margin-top: 2rem; gap: 1.5rem;">
+        <div class="wf-shortcut"><span>✉</span><br>Gmail</div>
+        <div class="wf-shortcut"><span>📬</span><br>Outlook</div>
+        <div class="wf-shortcut"><span>📁</span><br>Drive</div>
+        <div class="wf-shortcut"><span>🗺</span><br>Maps</div>
+        <div class="wf-shortcut"><span>▶</span><br>YouTube</div>
+        <div class="wf-shortcut"><span>📄</span><br>Docs</div>
+      </div>
+    </div>
+    <div class="wf-dashed text-center text-muted" style="margin-top: 2rem;">Footer: View session dashboard →</div>
+  </div>
+
+  <!-- Wireframe 2: Dashboard -->
+  <div class="wireframe">
+    <h2>Session dashboard interface</h2>
+    <div class="wf-box" style="border: none; padding: 0; margin-bottom: 0.5rem;"><strong>Session Dashboard</strong></div>
+    <div class="text-muted" style="margin-bottom: 1rem;">Behaviour data captured from the phishing sim</div>
+    <div class="wf-dashed" style="max-width: 400px;">View session [dropdown]</div>
+    <div class="wf-risk">
+      <div class="text-muted" style="margin-bottom: 0.5rem;">Risk assessment</div>
+      <div style="font-size: 1.5rem; font-weight: 700;">72%</div>
+      <div class="text-muted" style="margin-top: 0.5rem; font-size: 0.85rem;">
+        • Fast first interaction (&lt;2s)<br>
+        • Low scroll depth with typing<br>
+        • Phishing link click
+      </div>
+    </div>
+    <div class="wf-row" style="margin-top: 1rem;">
+      <div class="wf-stat"><strong>15</strong><br><span class="text-muted">Events</span></div>
+      <div class="wf-stat"><strong>1</strong><br><span class="text-muted">Session</span></div>
+      <div class="wf-stat"><strong>Suspicious</strong><br><span class="text-muted">Classification</span></div>
+    </div>
+    <div class="wf-box" style="margin-top: 1rem; padding: 0.75rem 1rem;">Event timeline</div>
+    <div class="wf-event-row"><span style="min-width: 120px;">first_interaction</span><span class="text-muted">0.5s</span><span class="text-muted">click</span></div>
+    <div class="wf-event-row"><span style="min-width: 120px;">gmail_login</span><span class="text-muted">2.1s</span><span class="text-muted">page_view</span></div>
+    <div class="wf-event-row"><span style="min-width: 120px;">phishing_link_click</span><span class="text-muted">8.2s</span><span class="text-muted">email_id: 2</span></div>
+    <div class="wf-event-row"><span style="min-width: 120px;">session_end</span><span class="text-muted">12.0s</span><span class="text-muted">—</span></div>
+    <div class="wf-dashed text-muted" style="margin-top: 1rem;">← Back to phishing sim | View in H2 database →</div>
+  </div>
+
+  <p class="text-muted" style="margin-top: 2rem;">Screenshot each wireframe box for your dissertation. Use browser DevTools or a screenshot tool to capture at 100% zoom for clear figures.</p>
+</body>
+</html>

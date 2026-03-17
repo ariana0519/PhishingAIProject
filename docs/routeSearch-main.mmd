@@ -1,0 +1,27 @@
+flowchart TD
+    Start([User enters query, presses Enter])
+    Trim[Trim and lowercase query]
+    RouteSearch[routeSearch query]
+    Start --> Trim
+    Trim --> RouteSearch
+    RouteSearch --> CheckOutlook{outlook, microsoft,<br/>office, live.com, hotmail?}
+    CheckOutlook -->|Yes| Outlook[search-outlook]
+    CheckOutlook -->|No| CheckGmail{gmail, google mail?}
+    CheckGmail -->|Yes| Gmail[search-gmail]
+    CheckGmail -->|No| CheckDrive{drive, google drive?}
+    CheckDrive -->|Yes| Drive[search-drive]
+    CheckDrive -->|No| CheckMaps{maps, google maps?}
+    CheckMaps -->|Yes| Maps[search-maps]
+    CheckMaps -->|No| CheckYoutube{youtube, video?}
+    CheckYoutube -->|Yes| Youtube[search-youtube]
+    CheckYoutube -->|No| CheckDocs{docs, google docs?}
+    CheckDocs -->|Yes| Docs[search-docs]
+    CheckDocs -->|No| Generic[search]
+    Outlook --> ShowPage[showPage]
+    Gmail --> ShowPage
+    Drive --> ShowPage
+    Maps --> ShowPage
+    Youtube --> ShowPage
+    Docs --> ShowPage
+    Generic --> ShowPage
+    ShowPage --> End([Display page])

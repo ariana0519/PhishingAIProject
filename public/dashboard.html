@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0 auto;
+      padding: 2rem;
+      max-width: 900px;
+      background: #1a1a2e;
+      color: #e8eaed;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #e8eaed; }
+    .subtitle { color: #9aa0a6; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: #252530;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      min-width: 120px;
+    }
+    .stat strong { display: block; font-size: 1.5rem; color: #8ab4f8; }
+    .stat span { font-size: 0.8rem; color: #9aa0a6; }
+    .risk-card {
+      background: #252530;
+      padding: 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #8ab4f8;
+      color: #e8eaed;
+    }
+    .risk-card.suspicious { border-left-color: #dc3545; }
+    .risk-card.moderate { border-left-color: #f59e0b; }
+    .risk-card.normal { border-left-color: #22c55e; }
+    .risk-card h2 { font-size: 1rem; margin: 0 0 0.5rem 0; color: #bdc1c6; }
+    .risk-score { font-size: 2rem; font-weight: 700; color: #e8eaed; }
+    .risk-factors { margin-top: 0.75rem; font-size: 0.85rem; color: #9aa0a6; }
+    .risk-factors li { margin: 0.25rem 0; }
+    .events {
+      background: #252530;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .events h2 { font-size: 1rem; padding: 1rem 1.25rem; margin: 0; border-bottom: 1px solid #3c4043; background: #2d2e31; color: #e8eaed; }
+    .event-list { max-height: 400px; overflow-y: auto; }
+    .event-row {
+      padding: 0.6rem 1.25rem;
+      border-bottom: 1px solid #3c4043;
+      font-size: 0.85rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      color: #bdc1c6;
+    }
+    .event-row:last-child { border-bottom: none; }
+    .event-type { font-weight: 500; min-width: 120px; color: #8ab4f8; }
+    .event-time { color: #9aa0a6; font-size: 0.8rem; }
+    .event-detail { color: #9aa0a6; flex: 1; }
+    a { color: #8ab4f8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .session-selector {
+      background: #252530;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      margin-bottom: 1.5rem;
+    }
+    .session-selector label { font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem; color: #9aa0a6; }
+    .session-selector select {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      border: 1px solid #3c4043;
+      border-radius: 6px;
+      background: #35363a;
+      color: #e8eaed;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Session Dashboard</h1>
+  <p class="subtitle">Behaviour data captured from the phishing sim</p>
+
+  <div class="session-selector" id="session-selector" style="display: none;">
+    <label for="session-picker">View session</label>
+    <select id="session-picker"></select>
+  </div>
+
+  <div id="risk-section"></div>
+  <div class="stats" id="stats"></div>
+  <div class="events">
+    <h2>Event timeline</h2>
+    <div class="event-list" id="events"></div>
+  </div>
+
+  <p style="margin-top: 1.5rem;">
+    <a href="/phishing-sim.html">← Back to phishing sim (continue browsing)</a>
+    &nbsp;|&nbsp;
+    <a href="http://localhost:8080/h2-console/?url=jdbc:h2:file:/Users/arianaislam/Desktop/behaviour-backend/data/behavior-db&user=sa" target="_blank">View in H2 database →</a>
+  </p>
+
+  <script>
+    (function () {
+      var allEvents = [];
+
+      function getSession() {
+        return new URLSearchParams(globalThis.location.search).get("session") || sessionStorage.getItem("lastSessionId");
+      }
+
+      function getSessionsFromEvents(events) {
+        var bySession = {};
+        events.forEach(function (e) {
+          var sid = e.sessionId;
+          if (!sid) return;
+          if (!bySession[sid]) bySession[sid] = { id: sid, count: 0, lastAt: null };
+          bySession[sid].count++;
+          if (e.receivedAt && (!bySession[sid].lastAt || e.receivedAt > bySession[sid].lastAt)) {
+            bySession[sid].lastAt = e.receivedAt;
+          }
+        });
+        return Object.values(bySession).sort(function (a, b) {
+          return (b.lastAt || "") > (a.lastAt || "") ? 1 : -1;
+        });
+      }
+
+      function updateSessionPicker(sessions, selectedId) {
+        var sel = document.getElementById("session-picker");
+        var container = document.getElementById("session-selector");
+        var hasSelected = sessions.some(function (s) { return s.id === selectedId; });
+        if (selectedId && !hasSelected) {
+          sessions = [{ id: selectedId, count: 0, lastAt: null }].concat(sessions);
+        }
+        if (sessions.length <= 1) {
+          container.style.display = "none";
+          return;
+        }
+        container.style.display = "block";
+        sel.innerHTML = sessions.map(function (s) {
+          var label = (s.id ? s.id.slice(0, 8) : "?") + " — " + s.count + " events";
+          if (s.lastAt) label += " — " + new Date(s.lastAt).toLocaleTimeString();
+          return "<option value=\"" + (s.id || "") + "\"" + (s.id === selectedId ? " selected" : "") + ">" + label + "</option>";
+        }).join("");
+      }
+
+      function navigateToSession(sessionId) {
+        var url = new URL(globalThis.location.href);
+        if (sessionId) url.searchParams.set("session", sessionId);
+        else url.searchParams.delete("session");
+        history.replaceState({}, "", url.toString());
+        render(allEvents);
+      }
+
+      function getEventDetail(evt) {
+        if (evt.eventType === "scroll_depth" && evt.payloadJson) {
+          try {
+            var scrollData = JSON.parse(evt.payloadJson);
+            if (scrollData.event && scrollData.event.maxDepthPercent) return "Scroll: " + scrollData.event.maxDepthPercent + "%";
+          } catch (err) {
+            console.debug("Scroll payload parse failed:", err);
+          }
+        } else if (evt.eventType === "click" && evt.payloadJson) {
+          try {
+            var clickData = JSON.parse(evt.payloadJson);
+            if (clickData.event && clickData.event.element) return "Element: " + (clickData.event.element.tag || "");
+          } catch (err) {
+            console.debug("Click payload parse failed:", err);
+          }
+        } else if (evt.eventType === "keydown") return "Key press";
+        return "";
+      }
+
+      function render(events) {
+        allEvents = events;
+        var session = getSession();
+        var sessions = getSessionsFromEvents(events);
+
+        if (!session && sessions.length > 0) session = sessions[0].id;
+        if (!session) session = null;
+
+        updateSessionPicker(sessions, session);
+
+        document.getElementById("session-picker").onchange = function () {
+          navigateToSession(this.value || null);
+        };
+
+        var sessionEvents = session ? events.filter(function (e) { return e.sessionId === session; }) : events;
+        if (sessionEvents.length === 0) sessionEvents = events.slice(-50);
+
+        if (session) {
+          fetch("/backend/api/behavior-events/sessions/" + encodeURIComponent(session) + "/analysis")
+            .then(function (r) { return r.json(); })
+            .then(function (a) {
+              var cls = a.classification ? a.classification.toLowerCase().replaceAll(" ", "-") : "normal";
+              if (cls.includes("suspicious")) cls = "suspicious";
+              else if (cls.includes("moderate")) cls = "moderate";
+              else cls = "normal";
+              var factorsHtml = a.factors && a.factors.length ? "<ul class=\"risk-factors\">" + a.factors.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>" : "";
+              document.getElementById("risk-section").innerHTML = "<div class=\"risk-card " + cls + "\"><h2>Post-session risk analysis</h2><div class=\"risk-score\">" + a.riskScore + "% risk</div><div>" + a.classification + "</div>" + factorsHtml + "</div>";
+            })
+            .catch(function (err) {
+              console.warn("Risk analysis fetch failed:", err);
+              document.getElementById("risk-section").innerHTML = "";
+            });
+        }
+
+        var clicks = sessionEvents.filter(function (e) { return e.eventType === "click"; }).length;
+        var keydowns = sessionEvents.filter(function (e) { return e.eventType === "keydown"; }).length;
+        var scrolls = sessionEvents.filter(function (e) { return e.eventType === "scroll_depth"; }).length;
+        var first = sessionEvents.find(function (e) { return e.eventType === "first_interaction"; });
+        var timeMs = null;
+        if (first && first.payloadJson) {
+          try {
+            var parsed = JSON.parse(first.payloadJson);
+            timeMs = parsed.event && parsed.event.timeSincePageLoadMs;
+          } catch (parseErr) {
+            console.debug("First interaction payload parse failed:", parseErr);
+          }
+        }
+
+        var statsHtml = "<div class=\"stat\"><strong>" + sessionEvents.length + "</strong><span>Total events</span></div>" +
+          "<div class=\"stat\"><strong>" + clicks + "</strong><span>Clicks</span></div>" +
+          "<div class=\"stat\"><strong>" + keydowns + "</strong><span>Key presses</span></div>" +
+          "<div class=\"stat\"><strong>" + scrolls + "</strong><span>Scroll updates</span></div>";
+        if (timeMs !== null) statsHtml += "<div class=\"stat\"><strong>" + timeMs + "ms</strong><span>Time to first interaction</span></div>";
+        document.getElementById("stats").innerHTML = statsHtml;
+
+        var list = document.getElementById("events");
+        list.innerHTML = sessionEvents.slice().reverse().map(function (e) {
+          var t = e.receivedAt ? new Date(e.receivedAt).toLocaleTimeString() : "";
+          var d = getEventDetail(e);
+          return "<div class=\"event-row\"><span class=\"event-type\">" + e.eventType + "</span><span class=\"event-time\">" + t + "</span><span class=\"event-detail\">" + d + "</span></div>";
+        }).join("");
+      }
+
+      fetch("/backend/api/behavior-events")
+        .then(function (r) { return r.json(); })
+        .then(render)
+        .catch(function (err) {
+          console.warn("Events fetch failed:", err);
+          document.getElementById("stats").innerHTML = "<div class=\"stat\">Failed to load events. Is the backend running?</div>";
+        });
+    })();
+  </script>
+</body>
+</html>

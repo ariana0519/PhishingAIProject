@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Base44 APP</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        const sessionId = Math.random().toString(36).slice(2);
+        const navigationStart = performance.now();
+        let firstInteractionMs = null;
+        let maxScrollDepth = 0;
+
+        function sendBehaviorEvent(event) {
+          const payload = {
+            sessionId,
+            timestamp: Date.now(),
+            event,
+          };
+          const url = "/backend/api/behavior-events";
+          const body = JSON.stringify(payload);
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
+          } else {
+            fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body,
+              keepalive: true,
+            }).catch(function (e) {
+              console.error("Failed to send behavior event", e);
+            });
+          }
+        }
+
+        function getElementMetadata(target) {
+          if (!target || target === document || target === globalThis) {
+            return null;
+          }
+          const el = target.closest("[data-track], button, a, input, textarea, select");
+          if (!el) return null;
+          return {
+            tag: el.tagName,
+            id: el.id || null,
+            role: el.getAttribute("role") || null,
+            name: el.getAttribute("name") || null,
+            classes: el.className || null,
+          };
+        }
+
+        function recordFirstInteractionIfNeeded(type) {
+          if (firstInteractionMs != null) return;
+          firstInteractionMs = performance.now() - navigationStart;
+          sendBehaviorEvent({
+            type: "first_interaction",
+            interactionType: type,
+            timeSincePageLoadMs: Math.round(firstInteractionMs),
+          });
+        }
+
+        globalThis.addEventListener(
+          "click",
+          function (event) {
+            recordFirstInteractionIfNeeded("click");
+            const meta = getElementMetadata(event.target);
+            sendBehaviorEvent({
+              type: "click",
+              element: meta,
+            });
+          },
+          true
+        );
+
+        document.addEventListener(
+          "keydown",
+          function (event) {
+            recordFirstInteractionIfNeeded("keydown");
+            const meta = getElementMetadata(event.target);
+            sendBehaviorEvent({
+              type: "keydown",
+              element: meta,
+            });
+          },
+          true
+        );
+
+        globalThis.addEventListener(
+          "scroll",
+          function () {
+            const doc = document.documentElement;
+            const scrollTop = window.scrollY || doc.scrollTop || 0;
+            const viewportHeight = globalThis.innerHeight || doc.clientHeight || 0;
+            const fullHeight = doc.scrollHeight || 1;
+            const depth = Math.min(1, (scrollTop + viewportHeight) / fullHeight);
+            if (depth > maxScrollDepth) {
+              maxScrollDepth = depth;
+              sendBehaviorEvent({
+                type: "scroll_depth",
+                maxDepthPercent: Math.round(maxScrollDepth * 100),
+              });
+            }
+          },
+          { passive: true }
+        );
+
+        document.addEventListener("visibilitychange", function () {
+          sendBehaviorEvent({
+            type: "visibility_change",
+            state: document.visibilityState,
+          });
+        });
+
+        globalThis.addEventListener("beforeunload", function () {
+          sendBehaviorEvent({
+            type: "session_end",
+            maxScrollDepthPercent: Math.round(maxScrollDepth * 100),
+            timeOnPageMs: Math.round(performance.now() - navigationStart),
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

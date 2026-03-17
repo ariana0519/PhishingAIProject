@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph Keywords
+        A[outlook, microsoft, office, live.com, hotmail]
+        B[gmail, google mail]
+        C[drive, google drive]
+        D[maps, google maps]
+        E[youtube, video]
+        F[docs, google docs]
+    end
+    subgraph Pages
+        P1[search-outlook]
+        P2[search-gmail]
+        P3[search-drive]
+        P4[search-maps]
+        P5[search-youtube]
+        P6[search-docs]
+        P7[search]
+    end
+    A --> P1
+    B --> P2
+    C --> P3
+    D --> P4
+    E --> P5
+    F --> P6
+    G[else] --> P7

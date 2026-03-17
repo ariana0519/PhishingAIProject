@@ -1,0 +1,42 @@
+CHAPTER 6: TESTING AND EVALUATION – REVISED PARAGRAPHS
+========================================================
+
+---
+
+COMMENT FIX 1 – Intro paragraph (formal English)
+Original comment: "not a bad explanation, but try to write in formal English"
+
+REVISED VERSION:
+
+This chapter presents the testing approach adopted, the outcomes achieved, and the scope adjustments made during the project. The objectives set out in Chapter 1 included the assessment of accuracy, false positive rate, and detection latency. During development, it became clear that several of these objectives could not be met within the available resources. No labelled dataset existed, and no formal user study with participants was conducted. The evaluation was therefore refocused on what could be demonstrated: that behavioural capture functions as intended, that the heuristics produce the expected outputs, and that the system correctly flags the intended interaction patterns. The following sections describe both the technical testing performed and the rationale for these scope decisions.
+
+---
+
+COMMENT FIX 2 – Section 6.1 testing approach (formal, structured)
+Original comment: "Again this type of language is not appropriate for a dissertation... Just structure it as follows: Unit tests + formal testing out of scope due to time and development effort; Black box testing feasible under the conditions"
+
+REVISED VERSION:
+
+Several testing approaches were considered. Unit testing (e.g. Jest, Vitest, JUnit) and formal integration testing (e.g. API tests via Postman or automated scripts) were deemed out of scope due to time constraints and the development effort required to make the codebase testable. White-box testing, involving step-by-step inspection of each function, was similarly not pursued. Instead, black box testing was adopted as the feasible approach under the given conditions: the system was treated as a closed unit, interacted with as an end user would, and the outputs were verified accordingly. This approach validated end-to-end behaviour without requiring additional tooling or test infrastructure.
+
+---
+
+COMMENT FIX 3 – Pros/cons paragraph (clearer sequence of ideas)
+Original comment: "sequence of ideas here are very confusing"
+
+REVISED VERSION:
+
+The black box approach had clear advantages: no extra setup or tooling, more time for building, and it validated the main goal—that interactions in the phishing sim are correctly captured in the dashboard. The drawbacks were no automated regression, possible edge-case gaps, and a less rigorous look than a full test suite. For a solo dissertation under time pressure, this trade-off was acceptable.
+
+---
+
+COMMENT FIX 4 – Section 6.3 initial idea vs. what was done (concise, out of scope)
+Original comment: "inappropriate language for a dissertation..cut around the fluff and simply mention the initial idea being 'out of scope' due to a lack of resources to conduct a proper evaluation"
+
+REVISED VERSION:
+
+The initial plan for Objective 4 was to assess accuracy, false positive rate, and detection latency. Such metrics require ground truth: a labelled dataset of sessions in which the true outcome (phishing victim or not) is known. Producing such data would require a formal user study—participant recruitment, ethics approval, controlled tasks, and manual labelling—which is a substantial undertaking in its own right. Given the lack of resources and the dissertation timeline, this approach was deemed out of scope. The evaluation was instead refocused on qualitative validation: confirming that the heuristics behave as designed (sessions matching the intended patterns receive higher scores; those that do not receive lower scores) and acknowledging that false positives are possible, though not quantified. This reframing allowed the research question to be addressed in a meaningful way within the available constraints.
+
+---
+
+END OF REVISED PARAGRAPHS

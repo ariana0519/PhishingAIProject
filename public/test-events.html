@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Behaviour Tracking Test</title>
+  <style>
+    body { font-family: system-ui; max-width: 600px; margin: 2rem auto; padding: 1rem; }
+    button { padding: 0.5rem 1rem; margin: 0.25rem; cursor: pointer; }
+    .status { margin-top: 1.5rem; padding: 1rem; background: #f0f0f0; border-radius: 8px; }
+    .status.success { background: #d4edda; }
+    .status.error { background: #f8d7da; }
+    #scroll-area { height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; }
+    #scroll-area p { margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Behaviour Event Test</h1>
+  <p>Interact with this page to send events to the backend. Then check <a href="http://localhost:8080/api/behavior-events" target="_blank">/api/behavior-events</a> (backend). Status below shows if each event was sent.</p>
+
+  <button type="button">Click me</button>
+  <input type="text" placeholder="Type here" />
+  <div id="scroll-area">
+    <p><strong>Scroll down inside this box ↓</strong></p>
+    <p>Line 1 – First line.</p>
+    <p>Line 2 – More content here.</p>
+    <p>Line 3 – Keep scrolling down.</p>
+    <p>Line 4 – Fourth line.</p>
+    <p>Line 5 – Fifth line.</p>
+    <p>Line 6 – Sixth line.</p>
+    <p>Line 7 – Seventh line.</p>
+    <p>Line 8 – Eighth line.</p>
+    <p>Line 9 – Ninth line.</p>
+    <p>Line 10 – Tenth line.</p>
+    <p>Line 11 – Eleventh line.</p>
+    <p>Line 12 – Twelfth line.</p>
+    <p>Line 13 – Thirteenth line.</p>
+    <p>Line 14 – Fourteenth line.</p>
+    <p>Line 15 – Fifteenth line.</p>
+    <p>Line 16 – Sixteenth line.</p>
+    <p>Line 17 – Seventeenth line.</p>
+    <p>Line 18 – Eighteenth line.</p>
+    <p>Line 19 – Nineteenth line.</p>
+    <p>Line 20 – <strong>You reached the bottom!</strong></p>
+  </div>
+
+  <div class="status" id="status">Waiting for events...</div>
+
+  <script>
+    (function () {
+      const sessionId = Math.random().toString(36).slice(2);
+      const navStart = performance.now();
+      let firstInteraction = null;
+
+      function onSuccess(eventType) {
+        document.getElementById("status").textContent = "Event sent: " + eventType;
+        document.getElementById("status").className = "status success";
+      }
+      function onFail(e) {
+        document.getElementById("status").textContent = "Failed: " + (e?.message || "check console");
+        document.getElementById("status").className = "status error";
+      }
+
+      function send(event) {
+        const payload = { sessionId, timestamp: Date.now(), event };
+        const url = "/backend/api/behavior-events";
+        const body = JSON.stringify(payload);
+
+        fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        })
+          .then(function (r) {
+            if (r.ok) onSuccess(event.type);
+            else onFail({ message: "HTTP " + r.status });
+          })
+          .catch(onFail);
+      }
+
+      function recordFirst(type) {
+        if (firstInteraction) return;
+        firstInteraction = performance.now() - navStart;
+        send({ type: "first_interaction", interactionType: type, timeSincePageLoadMs: Math.round(firstInteraction) });
+      }
+
+      document.querySelector("button").addEventListener("click", function() {
+        recordFirst("click");
+        send({ type: "click", element: { tag: "BUTTON" } });
+      });
+      document.querySelector("input").addEventListener("keydown", function() {
+        recordFirst("keydown");
+        send({ type: "keydown", element: { tag: "INPUT" } });
+      });
+
+      let maxDepth = 0;
+      document.getElementById("scroll-area").addEventListener("scroll", function() {
+        const depth = (this.scrollTop + this.clientHeight) / this.scrollHeight;
+        if (depth > maxDepth) {
+          maxDepth = depth;
+          send({ type: "scroll_depth", maxDepthPercent: Math.round(maxDepth * 100) });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

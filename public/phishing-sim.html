@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Tab</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #202124; color: #e8eaed; min-height: 100vh; }
+    .chrome {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .tab-bar {
+      background: #2d2e31;
+      padding: 0.5rem 0.5rem 0 0.5rem;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      background: #35363a;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tab:hover { background: #3f4043; }
+    .tab.active { background: #202124; }
+    .tab.new { padding: 0.5rem 0.75rem; color: #9aa0a6; }
+    .nav-bar {
+      background: #202124;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: #9aa0a6;
+      cursor: pointer;
+      border-radius: 50%;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-btn:hover { background: #35363a; color: #e8eaed; }
+    .nav-btn:disabled { opacity: 0.4; cursor: default; }
+    .dashboard-btn {
+      padding: 0.4rem 0.9rem;
+      background: #303134;
+      color: #9aa0a6;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+    .dashboard-btn:hover { background: #3c4043; color: #e8eaed; }
+    .address-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #303134;
+      border-radius: 24px;
+      padding: 0 1rem;
+      margin: 0 0.5rem;
+      height: 40px;
+    }
+    .address-bar input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #e8eaed;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .address-bar input::placeholder { color: #9aa0a6; }
+    .content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .content h1 { font-size: 1.5rem; font-weight: 400; margin: 0 0 1.5rem 0; text-align: center; }
+    .search-box {
+      max-width: 584px;
+      margin: 0 auto 2rem auto;
+      border: 1px solid #5f6368;
+      border-radius: 24px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .search-box:focus-within { box-shadow: 0 1px 6px rgba(0,0,0,0.3); border-color: #5f6368; }
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #e8eaed;
+      font-size: 1rem;
+      outline: none;
+    }
+    .shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .shortcut {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #e8eaed;
+      font-size: 0.85rem;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .shortcut:hover { background: #303134; }
+    .shortcut-icon {
+      width: 48px;
+      height: 48px;
+      background: #3c4043;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .page {
+      display: none;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .page.active { display: block; }
+    .page h2 { font-size: 1.25rem; margin: 0 0 1rem 0; font-weight: 400; }
+    .page p { margin: 0.5rem 0; color: #bdc1c6; }
+    .page a { color: #8ab4f8; text-decoration: none; }
+    .page a:hover { text-decoration: underline; }
+    .search-result {
+      margin-bottom: 1.5rem;
+    }
+    .search-result a { font-size: 1.1rem; color: #8ab4f8; }
+    .search-result .url { font-size: 0.8rem; color: #9aa0a6; margin: 0.25rem 0; }
+    .footer {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #5f6368;
+    }
+    .footer a { color: #5f6368; }
+    .gmail-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+      margin: 1.5rem 0;
+    }
+    .gmail-form input {
+      padding: 0.75rem 1rem;
+      border: 1px solid #5f6368;
+      border-radius: 4px;
+      background: #303134;
+      color: #e8eaed;
+      font-size: 1rem;
+    }
+    .gmail-form input::placeholder { color: #9aa0a6; }
+    .service-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+      margin: 1.5rem 0;
+    }
+    .service-form input {
+      padding: 0.75rem 1rem;
+      border: 1px solid #5f6368;
+      border-radius: 4px;
+      background: #303134;
+      color: #e8eaed;
+      font-size: 1rem;
+    }
+    .service-form input::placeholder { color: #9aa0a6; }
+    .gmail-inbox .content-item {
+      padding: 1rem;
+      border-bottom: 1px solid #3c4043;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 1rem;
+      align-items: start;
+    }
+    .gmail-inbox .content-item:hover { background: #303134; }
+    .gmail-btn {
+      padding: 0.75rem 1.5rem;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .gmail-btn:hover { background: #1765cc; }
+    .gmail-inbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #5f6368;
+    }
+    .gmail-user { font-size: 0.9rem; color: #9aa0a6; }
+    .gmail-inbox { display: flex; flex-direction: column; gap: 0; }
+    .gmail-email {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #3c4043;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 1rem;
+      align-items: center;
+      min-height: 3.5rem;
+    }
+    .gmail-email:hover { background: #3c4043; box-shadow: inset 0 0 0 1px #5f6368; }
+    .gmail-from { font-weight: 600; color: #e8eaed; }
+    .gmail-subject { color: #e8eaed; }
+    .gmail-preview { font-size: 0.85rem; color: #9aa0a6; grid-column: 2; }
+    .maps-search { margin-bottom: 1.5rem; }
+    .maps-search input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #5f6368; border-radius: 8px; background: #303134; color: #e8eaed; font-size: 1rem; }
+    .maps-result { padding: 1rem; border-bottom: 1px solid #3c4043; cursor: pointer; display: flex; align-items: flex-start; gap: 1rem; }
+    .maps-result:hover { background: #303134; }
+    .maps-result-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .maps-result-name { font-weight: 500; color: #e8eaed; }
+    .maps-result-addr { font-size: 0.85rem; color: #9aa0a6; margin-top: 0.25rem; }
+    .maps-result-type { font-size: 0.75rem; color: #5f6368; margin-top: 0.25rem; }
+    .youtube-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+    .youtube-card { cursor: pointer; text-decoration: none; color: inherit; }
+    .youtube-card:hover .youtube-thumb { background: #3c4043; }
+    .youtube-thumb { width: 100%; aspect-ratio: 16/9; background: #303134; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #bdc1c6; }
+    .youtube-title { font-weight: 500; color: #e8eaed; margin-top: 0.5rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .youtube-meta { font-size: 0.85rem; color: #9aa0a6; margin-top: 0.25rem; }
+    .docs-editor-page { max-width: 900px; }
+    .docs-toolbar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid #3c4043; margin-bottom: 1rem; flex-wrap: wrap; }
+    .docs-toolbar .btn, .docs-toolbar button { padding: 0.4rem 0.6rem; background: transparent; border: none; color: #9aa0a6; cursor: pointer; border-radius: 4px; font-size: 0.9rem; }
+    .docs-toolbar .btn:hover, .docs-toolbar button:hover { background: #3c4043; color: #e8eaed; }
+    .docs-canvas { min-height: 400px; padding: 2rem; background: #fff; color: #202124; border-radius: 4px; font-family: "Google Sans", Arial, sans-serif; font-size: 11pt; line-height: 1.5; }
+    .docs-canvas:focus { outline: none; }
+    .gmail-email-view { padding: 1rem 0; }
+    .gmail-email-view .email-header { border-bottom: 1px solid #3c4043; padding-bottom: 1rem; margin-bottom: 1rem; }
+    .gmail-email-view .email-from { font-weight: 600; color: #e8eaed; font-size: 1rem; }
+    .gmail-email-view .email-subject { font-size: 1.1rem; color: #e8eaed; margin: 0.25rem 0; }
+    .gmail-email-view .email-body { color: #bdc1c6; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; }
+    .gmail-email-view .email-body a.phishing-link { color: #8ab4f8; text-decoration: underline; cursor: pointer; }
+    .gmail-email-view .email-body a.phishing-link:hover { color: #aecbfa; }
+    .gmail-back-link { display: inline-block; margin-bottom: 1rem; color: #8ab4f8; cursor: pointer; }
+    .gmail-back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="chrome">
+    <div class="tab-bar">
+      <div class="tab active">New Tab</div>
+      <div class="tab new">+</div>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-btn" type="button" title="Back">‹</button>
+      <button class="nav-btn" type="button" title="Forward">›</button>
+      <button class="nav-btn" type="button" title="Refresh">↻</button>
+      <div class="address-bar">
+        <input type="text" id="address" placeholder="Search Google or type a URL" value="" />
+      </div>
+      <a href="#" id="nav-dashboard" class="dashboard-btn">Session dashboard</a>
+    </div>
+
+    <div class="content">
+      <div class="page active" id="page-home">
+        <h1 style="font-size: 5rem; margin-bottom: 1.5rem; font-weight: 400;">Google</h1>
+        <div class="search-box">
+          <input type="text" id="search" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="shortcuts">
+          <a href="#" class="shortcut" data-page="gmail-login"><span class="shortcut-icon">✉</span>Gmail</a>
+          <a href="#" class="shortcut" data-page="outlook-login"><span class="shortcut-icon">📬</span>Outlook</a>
+          <a href="#" class="shortcut" data-page="drive-login"><span class="shortcut-icon">📁</span>Drive</a>
+          <a href="#" class="shortcut" data-page="maps-login"><span class="shortcut-icon">🗺</span>Maps</a>
+          <a href="#" class="shortcut" data-page="youtube-login"><span class="shortcut-icon">▶</span>YouTube</a>
+          <a href="#" class="shortcut" data-page="docs-login"><span class="shortcut-icon">📄</span>Docs</a>
+        </div>
+      </div>
+
+      <div class="page" id="page-search">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-again" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#">Google</a>
+          <div class="url">https://www.google.com</div>
+          <p>Search the world's information, including webpages, images, videos and more.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Wikipedia</a>
+          <div class="url">https://www.wikipedia.org</div>
+          <p>The free encyclopedia. Search millions of articles in any language.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">GitHub</a>
+          <div class="url">https://github.com</div>
+          <p>Where the world builds software. Code hosting and collaboration.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-outlook" data-search-type="outlook">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-outlook" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="outlook-login">Outlook – free personal email and calendar</a>
+          <div class="url">https://outlook.live.com</div>
+          <p>Get free Outlook email and calendar, plus Office Online apps. Sign in or create an account.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Microsoft 365 – Outlook, Office, Teams</a>
+          <div class="url">https://www.microsoft.com/microsoft-365</div>
+          <p>Outlook for email, Word, Excel, PowerPoint and more. One subscription for your whole family.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Outlook on the web</a>
+          <div class="url">https://outlook.office.com</div>
+          <p>Access your Outlook.com, Hotmail, Live, or MSN email account from any device.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-gmail" data-search-type="gmail">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-gmail" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="gmail-login">Welcome to Gmail</a>
+          <div class="url">https://mail.google.com</div>
+          <p>Gmail is email that's intuitive, efficient, and useful. Sign in to access your account.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Gmail – Google Workspace</a>
+          <div class="url">https://workspace.google.com</div>
+          <p>Professional email, online storage, shared calendars, and more for your organisation.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Sign in - Google Accounts</a>
+          <div class="url">https://accounts.google.com</div>
+          <p>Sign in to your Google account to access Gmail, Drive, YouTube and more.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-drive" data-search-type="drive">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-drive" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="drive-login">Google Drive - Cloud Storage</a>
+          <div class="url">https://drive.google.com</div>
+          <p>Store and share files in the cloud. Access from any device.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Google Workspace – Drive, Docs, Sheets</a>
+          <div class="url">https://workspace.google.com</div>
+          <p>Collaborative cloud storage and productivity apps.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-maps" data-search-type="maps">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-maps" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="maps-login">Google Maps</a>
+          <div class="url">https://maps.google.com</div>
+          <p>Find local businesses, view maps and get driving directions.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Google Maps Platform</a>
+          <div class="url">https://mapsplatform.google.com</div>
+          <p>Build with Maps, Routes, and Places APIs.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-youtube" data-search-type="youtube">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-youtube" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="youtube-login">YouTube</a>
+          <div class="url">https://www.youtube.com</div>
+          <p>Enjoy the videos and music you love, upload original content and share with friends.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">YouTube Premium</a>
+          <div class="url">https://www.youtube.com/premium</div>
+          <p>Ad-free videos, offline viewing, and YouTube Music included.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-search-docs" data-search-type="docs">
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+          <input type="text" id="search-docs" placeholder="Search Google or type a URL" />
+        </div>
+        <div class="search-result">
+          <a href="#" data-goto="docs-login">Google Docs</a>
+          <div class="url">https://docs.google.com</div>
+          <p>Create and edit documents online. Collaborate in real time.</p>
+        </div>
+        <div class="search-result">
+          <a href="#">Google Docs, Sheets, Slides</a>
+          <div class="url">https://workspace.google.com</div>
+          <p>Free office suite for documents, spreadsheets and presentations.</p>
+        </div>
+      </div>
+
+      <div class="page" id="page-gmail-login">
+        <h2>Gmail</h2>
+        <p>Sign in to continue to Gmail</p>
+        <form id="gmail-login-form" class="gmail-form">
+          <input type="email" id="gmail-email" placeholder="Email or phone" required />
+          <input type="password" id="gmail-password" placeholder="Enter your password" required />
+          <button type="submit" id="gmail-sign-in" class="gmail-btn">Sign in</button>
+        </form>
+        <p style="margin-top: 1rem;"><a href="#">Forgot email?</a> <a href="#">Create account</a></p>
+      </div>
+
+      <div class="page" id="page-gmail-inbox">
+        <div class="gmail-inbox-header">
+          <h2>Gmail</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <p style="font-size:0.85rem;color:#9aa0a6;margin-bottom:1rem;">Click any email to open it</p>
+        <div class="gmail-inbox">
+          <div class="gmail-email" data-id="1">
+            <span class="gmail-from">Google</span>
+            <span class="gmail-subject">Your Google Account security alert</span>
+            <span class="gmail-preview">We noticed a new sign-in to your Google Account...</span>
+          </div>
+          <div class="gmail-email" data-id="2">
+            <span class="gmail-from">PayPal</span>
+            <span class="gmail-subject">Verify your account</span>
+            <span class="gmail-preview">We need to verify your identity. Click here...</span>
+          </div>
+          <div class="gmail-email" data-id="3">
+            <span class="gmail-from">Your Bank</span>
+            <span class="gmail-subject">Action required on your account</span>
+            <span class="gmail-preview">Your account may be limited. Sign in now...</span>
+          </div>
+          <div class="gmail-email" data-id="4">
+            <span class="gmail-from">Amazon</span>
+            <span class="gmail-subject">Your order has shipped</span>
+            <span class="gmail-preview">Your package is on its way...</span>
+          </div>
+          <div class="gmail-email" data-id="5">
+            <span class="gmail-from">Netflix</span>
+            <span class="gmail-subject">Update your payment method</span>
+            <span class="gmail-preview">We were unable to process your payment...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-gmail-email-view">
+        <div class="gmail-inbox-header">
+          <h2>Gmail</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="gmail-email-view">
+          <p style="margin-bottom:1rem;"><a href="#" id="gmail-back-to-inbox">← Back to inbox</a></p>
+          <div class="email-header">
+            <div class="email-from" id="gmail-view-from"></div>
+            <div class="email-subject" id="gmail-view-subject"></div>
+          </div>
+          <div class="email-body" id="gmail-view-body"></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-phishing-verify">
+        <h2>Verify your identity</h2>
+        <p style="color:#9aa0a6;margin-bottom:1.5rem;">To protect your account, please confirm your details below.</p>
+        <form class="gmail-form" id="phishing-verify-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Verify</button>
+        </form>
+        <p style="margin-top:1rem;"><a href="#" id="phishing-verify-back">← Back to inbox</a></p>
+      </div>
+
+      <div class="page" id="page-outlook-login">
+        <h2>Outlook</h2>
+        <p>Sign in to Microsoft Outlook</p>
+        <form class="service-form" id="outlook-login-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Sign in</button>
+        </form>
+        <p style="margin-top: 1rem;"><a href="#">Create free account</a></p>
+      </div>
+
+      <div class="page" id="page-outlook-inbox">
+        <div class="gmail-inbox-header">
+          <h2>Outlook</h2>
+          <span class="gmail-user">user@outlook.com</span>
+        </div>
+        <div class="gmail-inbox">
+          <div class="content-item" data-service="outlook" data-id="1"><span class="gmail-from">Microsoft</span><span class="gmail-subject">Your account has been locked</span><span class="gmail-preview">We detected unusual activity. Verify now...</span></div>
+          <div class="content-item" data-service="outlook" data-id="2"><span class="gmail-from">OneDrive</span><span class="gmail-subject">Shared folder invitation</span><span class="gmail-preview">You have been invited to view a folder...</span></div>
+          <div class="content-item" data-service="outlook" data-id="3"><span class="gmail-from">IT Support</span><span class="gmail-subject">Urgent: Password expiry</span><span class="gmail-preview">Your password will expire in 24 hours...</span></div>
+          <div class="content-item" data-service="outlook" data-id="4"><span class="gmail-from">LinkedIn</span><span class="gmail-subject">Someone viewed your profile</span><span class="gmail-preview">A recruiter has viewed your profile...</span></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-drive-login">
+        <h2>Google Drive</h2>
+        <p>Sign in to access your files</p>
+        <form class="service-form" id="drive-login-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Sign in</button>
+        </form>
+      </div>
+
+      <div class="page" id="page-drive-files">
+        <div class="gmail-inbox-header">
+          <h2>My Drive</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="gmail-inbox">
+          <div class="content-item" data-service="drive" data-id="1"><span class="gmail-from">📄</span><span class="gmail-subject">Tax_Return_2024.pdf</span><span class="gmail-preview">Shared with you</span></div>
+          <div class="content-item" data-service="drive" data-id="2"><span class="gmail-from">📄</span><span class="gmail-subject">Bank_Statement.pdf</span><span class="gmail-preview">Last modified yesterday</span></div>
+          <div class="content-item" data-service="drive" data-id="3"><span class="gmail-from">📄</span><span class="gmail-subject">Passport_Scan.pdf</span><span class="gmail-preview">Shared document</span></div>
+          <div class="content-item" data-service="drive" data-id="4"><span class="gmail-from">📁</span><span class="gmail-subject">Important Documents</span><span class="gmail-preview">Folder</span></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-maps-login">
+        <h2>Google Maps</h2>
+        <p>Sign in to save places and get personalised maps</p>
+        <form class="service-form" id="maps-login-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Sign in</button>
+        </form>
+      </div>
+
+      <div class="page" id="page-maps-results">
+        <div class="gmail-inbox-header">
+          <h2>Google Maps</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="maps-search">
+          <input type="text" id="maps-search-input" placeholder="Search for a place or address" />
+        </div>
+        <div id="maps-results-container"></div>
+      </div>
+
+      <div class="page" id="page-youtube-login">
+        <h2>YouTube</h2>
+        <p>Sign in to subscribe and get recommendations</p>
+        <form class="service-form" id="youtube-login-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Sign in</button>
+        </form>
+      </div>
+
+      <div class="page" id="page-youtube-videos">
+        <div class="gmail-inbox-header">
+          <h2>Subscriptions</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="youtube-grid" id="youtube-grid">
+          <a href="#" class="youtube-card" data-service="youtube" data-id="1"><div class="youtube-thumb">▶</div><div class="youtube-title">How to secure your Google Account</div><div class="youtube-meta">Google Security • 2.1M views</div></a>
+          <a href="#" class="youtube-card" data-service="youtube" data-id="2"><div class="youtube-thumb">▶</div><div class="youtube-title">Password reset – step by step tutorial</div><div class="youtube-meta">Tech Tips • 504K views</div></a>
+          <a href="#" class="youtube-card" data-service="youtube" data-id="3"><div class="youtube-thumb">▶</div><div class="youtube-title">Your watch history – personalised picks</div><div class="youtube-meta">For you • 12K views</div></a>
+          <a href="#" class="youtube-card" data-service="youtube" data-id="4"><div class="youtube-thumb">▶</div><div class="youtube-title">Verify your identity – secure login</div><div class="youtube-meta">Security Hub • 890K views</div></a>
+          <a href="#" class="youtube-card" data-service="youtube" data-id="5"><div class="youtube-thumb">▶</div><div class="youtube-title">Bank account security explained</div><div class="youtube-meta">Finance 101 • 1.2M views</div></a>
+          <a href="#" class="youtube-card" data-service="youtube" data-id="6"><div class="youtube-thumb">▶</div><div class="youtube-title">Two-factor authentication setup</div><div class="youtube-meta">Google Support • 3.4M views</div></a>
+        </div>
+      </div>
+
+      <div class="page" id="page-docs-login">
+        <h2>Google Docs</h2>
+        <p>Sign in to create and edit documents</p>
+        <form class="service-form" id="docs-login-form">
+          <input type="email" placeholder="Email or phone" required />
+          <input type="password" placeholder="Enter your password" required />
+          <button type="submit" class="gmail-btn">Sign in</button>
+        </form>
+      </div>
+
+      <div class="page" id="page-docs-list">
+        <div class="gmail-inbox-header">
+          <h2>Recent documents</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="gmail-inbox">
+          <div class="content-item" data-service="docs" data-id="1" data-title="Project Proposal"><span class="gmail-from">📄</span><span class="gmail-subject">Project Proposal</span><span class="gmail-preview">Last opened 2 days ago</span></div>
+          <div class="content-item" data-service="docs" data-id="2" data-title="Meeting Notes"><span class="gmail-from">📄</span><span class="gmail-subject">Meeting Notes</span><span class="gmail-preview">Shared with team</span></div>
+          <div class="content-item" data-service="docs" data-id="3" data-title="Personal Info"><span class="gmail-from">📄</span><span class="gmail-subject">Personal Info</span><span class="gmail-preview">Private document</span></div>
+        </div>
+      </div>
+
+      <div class="page docs-editor-page" id="page-docs-editor">
+        <div class="gmail-inbox-header">
+          <h2 id="docs-editor-title">Document</h2>
+          <span class="gmail-user">user@gmail.com</span>
+        </div>
+        <div class="docs-toolbar">
+          <button type="button" title="Undo">↶</button>
+          <button type="button" title="Redo">↷</button>
+          <span style="width:1px;height:20px;background:#3c4043;margin:0 4px;"></span>
+          <button type="button" title="Bold"><b>B</b></button>
+          <button type="button" title="Italic"><i>I</i></button>
+          <button type="button" title="Underline"><u>U</u></button>
+          <span style="width:1px;height:20px;background:#3c4043;margin:0 4px;"></span>
+          <select style="background:#303134;color:#e8eaed;border:1px solid #5f6368;border-radius:4px;padding:0.3rem;">
+            <option>Arial</option>
+            <option>Roboto</option>
+            <option>Times New Roman</option>
+          </select>
+          <select style="background:#303134;color:#e8eaed;border:1px solid #5f6368;border-radius:4px;padding:0.3rem;width:60px;">
+            <option>11</option>
+            <option>12</option>
+            <option>14</option>
+            <option>18</option>
+            <option>24</option>
+          </select>
+          <span style="width:1px;height:20px;background:#3c4043;margin:0 4px;"></span>
+          <button type="button" title="Link">🔗</button>
+          <button type="button" title="Comment">💬</button>
+        </div>
+        <div class="docs-canvas" id="docs-canvas" contenteditable="true" spellcheck="true">
+          <p style="margin:0 0 1em 0;">Click here to start typing...</p>
+          <p style="margin:0 0 1em 0;">This document can be edited. Use the toolbar above to format text.</p>
+        </div>
+        <p style="margin-top:1rem;"><a href="#" id="docs-back-to-list">← Back to documents</a></p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="#" id="view-dashboard">View session dashboard →</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var sessionId = Math.random().toString(36).slice(2);
+      var navStart = performance.now();
+      var firstInteraction = null;
+      var maxScrollDepth = 0;
+      var currentPage = "home";
+      var pageEnteredAt = performance.now();
+
+      function send(event) {
+        var payload = { sessionId: sessionId, timestamp: Date.now(), event: event };
+        var url = "/backend/api/behavior-events";
+        var body = JSON.stringify(payload);
+        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(function () {});
+      }
+
+      function recordFirst(type) {
+        if (firstInteraction) return;
+        firstInteraction = performance.now() - navStart;
+        send({ type: "first_interaction", interactionType: type, timeSincePageLoadMs: Math.round(firstInteraction) });
+      }
+
+      function getEl(target) {
+        if (!target || target === document || target === globalThis) return null;
+        var el = target.closest("a, button, input, textarea");
+        return el ? { tag: el.tagName, id: el.id || null } : null;
+      }
+
+      document.addEventListener("click", function (e) {
+        recordFirst("click");
+        send({ type: "click", element: getEl(e.target) });
+      }, true);
+
+      document.addEventListener("keydown", function (e) {
+        recordFirst("keydown");
+        send({ type: "keydown", element: getEl(e.target) });
+      }, true);
+
+      window.addEventListener("scroll", function () {
+        var st = window.scrollY || document.documentElement.scrollTop;
+        var vh = window.innerHeight;
+        var sh = document.documentElement.scrollHeight || 1;
+        var d = Math.min(1, (st + vh) / sh);
+        if (d > maxScrollDepth) { maxScrollDepth = d; send({ type: "scroll_depth", maxDepthPercent: Math.round(maxScrollDepth * 100) }); }
+      }, { passive: true });
+
+      var trackedPages = new Set(["gmail-login", "gmail-inbox", "gmail-email-view", "phishing-verify", "outlook-login", "outlook-inbox", "drive-login", "drive-files", "maps-login", "maps-results", "youtube-login", "youtube-videos", "docs-login", "docs-list", "docs-editor"]);
+      function isTrackedPage(id) { return trackedPages.has(id); }
+
+      window.addEventListener("beforeunload", function () {
+        if (isTrackedPage(currentPage)) {
+          var dur = Math.round(performance.now() - pageEnteredAt);
+          send({ type: "time_on_page", page: currentPage, durationMs: dur });
+        }
+        send({ type: "session_end", maxScrollDepthPercent: Math.round(maxScrollDepth * 100), timeOnPageMs: Math.round(performance.now() - navStart) });
+      });
+
+      function showPage(id, opt) {
+        if (isTrackedPage(currentPage)) {
+          var dur = Math.round(performance.now() - pageEnteredAt);
+          send({ type: "time_on_page", page: currentPage, durationMs: dur });
+        }
+        document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+        var page = document.getElementById("page-" + id);
+        if (page) page.classList.add("active");
+        currentPage = id;
+        pageEnteredAt = performance.now();
+        if (isTrackedPage(id)) send({ type: "page_view", page: id });
+        if (id === "maps-results") renderMapsResults(document.getElementById("maps-search-input").value);
+        if (id === "docs-editor" && opt && opt.docTitle) {
+          var t = document.getElementById("docs-editor-title");
+          if (t) t.textContent = opt.docTitle;
+        }
+      }
+
+      function routeSearch(query) {
+        var q = query.trim().toLowerCase();
+        if (q.includes("outlook") || q.includes("microsoft") || q.includes("office") || q.includes("live.com") || q.includes("hotmail")) return "search-outlook";
+        if (q.includes("gmail") || q.includes("google mail")) return "search-gmail";
+        if (q.includes("drive") || q.includes("google drive")) return "search-drive";
+        if (q.includes("maps") || q.includes("google maps")) return "search-maps";
+        if (q.includes("youtube") || q.includes("video")) return "search-youtube";
+        if (q.includes("docs") || q.includes("google docs")) return "search-docs";
+        return "search";
+      }
+
+      var mapsLocations = [
+        { id: "1", name: "Trafalgar Square", address: "Trafalgar Sq, London WC2N 5DN", type: "Landmark" },
+        { id: "2", name: "Buckingham Palace", address: "Westminster, London SW1A 1AA", type: "Landmark" },
+        { id: "3", name: "British Museum", address: "Great Russell St, London WC1B 3DG", type: "Museum" },
+        { id: "4", name: "Bank of England", address: "Threadneedle St, London EC2R 8AH", type: "Bank" },
+        { id: "5", name: "Empire State Building", address: "350 5th Ave, New York, NY 10118", type: "Landmark" },
+        { id: "6", name: "Times Square", address: "Manhattan, New York, NY 10036", type: "Landmark" },
+        { id: "7", name: "Chase Bank - Midtown", address: "350 Park Ave, New York, NY 10022", type: "Bank" },
+        { id: "8", name: "Eiffel Tower", address: "Champ de Mars, 5 Avenue Anatole France, 75007 Paris", type: "Landmark" },
+        { id: "9", name: "Notre-Dame Cathedral", address: "6 Parvis Notre-Dame, 75004 Paris", type: "Landmark" },
+        { id: "10", name: "Sydney Opera House", address: "Bennelong Point, Sydney NSW 2000", type: "Landmark" },
+        { id: "11", name: "Tokyo Tower", address: "4 Chome-2-8 Shibakoen, Minato City, Tokyo", type: "Landmark" },
+        { id: "12", name: "HSBC Main Branch", address: "8 Canada Square, London E14 5HQ", type: "Bank" },
+        { id: "13", name: "Oxford Street", address: "Oxford St, London W1", type: "Shopping" },
+        { id: "14", name: "Heathrow Airport", address: "Longford TW6, UK", type: "Airport" },
+        { id: "15", name: "Central Park", address: "New York, NY 10022", type: "Park" },
+        { id: "16", name: "Starbucks Oxford Circus", address: "261 Oxford St, London W1C 2DL", type: "Coffee shop" },
+        { id: "17", name: "Costa Coffee Bank", address: "1 Royal Exchange, London EC3V 3LL", type: "Coffee shop" },
+        { id: "18", name: "Pret A Manger", address: "78 Strand, London WC2R 0EZ", type: "Restaurant" },
+        { id: "19", name: "UCLH Hospital", address: "235 Euston Rd, London NW1 2BU", type: "Hospital" },
+        { id: "20", name: "Covent Garden", address: "Covent Garden, London WC2E", type: "Shopping" }
+      ];
+      function renderMapsResults(query) {
+        var q = (query || "").trim().toLowerCase();
+        var container = document.getElementById("maps-results-container");
+        if (!container) return;
+        var matches = q ? mapsLocations.filter(function (loc) {
+          return loc.name.toLowerCase().includes(q) || loc.address.toLowerCase().includes(q) || loc.type.toLowerCase().includes(q);
+        }) : mapsLocations;
+        container.innerHTML = matches.length ? matches.map(function (loc) {
+          return '<div class="maps-result content-item" data-service="maps" data-id="' + loc.id + '">' +
+            '<span class="maps-result-icon">📍</span>' +
+            '<div><div class="maps-result-name">' + loc.name + '</div>' +
+            '<div class="maps-result-addr">' + loc.address + '</div>' +
+            '<div class="maps-result-type">' + loc.type + '</div></div></div>';
+        }).join("") : '<p style="color:#9aa0a6;padding:1rem;">No places found. Try searching for "bank", "London", "museum", etc.</p>';
+        container.querySelectorAll(".maps-result").forEach(function (el) {
+          el.addEventListener("click", function () {
+            send({ type: "maps_place_click", page: "maps_results", placeId: el.dataset.id || "" });
+          });
+        });
+      }
+
+      var mapsSearchEl = document.getElementById("maps-search-input");
+      if (mapsSearchEl) {
+        mapsSearchEl.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); renderMapsResults(this.value); }
+        });
+        mapsSearchEl.addEventListener("input", function () { renderMapsResults(this.value); });
+      }
+
+      document.getElementById("search").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          var q = this.value.trim();
+          showPage(routeSearch(q));
+          document.getElementById("address").value = q;
+        }
+      });
+
+      ["search-again", "search-outlook", "search-gmail", "search-drive", "search-maps", "search-youtube", "search-docs"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") showPage(routeSearch(this.value) || "home");
+        });
+      });
+
+      document.getElementById("address").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          var v = this.value.trim().toLowerCase();
+          if (v === "dashboard" || v === "session" || v.includes("session data")) { goToDashboard(); return; }
+          if (v.includes("outlook") || v.includes("microsoft") || v.includes("office") || v.includes("live") || v.includes("hotmail")) showPage("outlook-login");
+          else if (v.includes("mail") || v === "gmail") showPage("gmail-login");
+          else if (v.includes("drive")) showPage("drive-login");
+          else if (v.includes("maps")) showPage("maps-login");
+          else if (v.includes("youtube") || v.includes("video")) showPage("youtube-login");
+          else if (v.includes("docs")) showPage("docs-login");
+          else showPage(routeSearch(this.value));
+        }
+      });
+
+      document.querySelectorAll(".shortcut").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          showPage(a.dataset.page);
+        });
+      });
+
+      document.querySelectorAll("[data-goto]").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          showPage(a.dataset.goto);
+        });
+      });
+
+      function goToDashboard() {
+        sessionStorage.setItem("lastSessionId", sessionId);
+        if (isTrackedPage(currentPage)) {
+          var dur = Math.round(performance.now() - pageEnteredAt);
+          send({ type: "time_on_page", page: currentPage, durationMs: dur });
+        }
+        send({ type: "session_end", maxScrollDepthPercent: Math.round(maxScrollDepth * 100), timeOnPageMs: Math.round(performance.now() - navStart) });
+        setTimeout(function () {
+          globalThis.location.href = "/dashboard.html?session=" + sessionId;
+        }, 600);
+      }
+
+      document.getElementById("view-dashboard").addEventListener("click", function (e) {
+        e.preventDefault();
+        goToDashboard();
+      });
+
+      document.getElementById("nav-dashboard").addEventListener("click", function (e) {
+        e.preventDefault();
+        goToDashboard();
+      });
+
+      document.getElementById("gmail-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "gmail_login", page: "gmail_login" });
+        showPage("gmail-inbox");
+      });
+
+      document.getElementById("outlook-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "outlook_login", page: "outlook_login" });
+        showPage("outlook-inbox");
+      });
+
+      document.getElementById("drive-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "drive_login", page: "drive_login" });
+        showPage("drive-files");
+      });
+
+      document.getElementById("maps-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "maps_login", page: "maps_login" });
+        showPage("maps-results");
+      });
+
+      document.getElementById("youtube-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "youtube_login", page: "youtube_login" });
+        showPage("youtube-videos");
+      });
+
+      document.getElementById("docs-login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "docs_login", page: "docs_login" });
+        showPage("docs-list");
+      });
+
+      var gmailEmailContent = {
+        "1": { from: "Google", subject: "Your Google Account security alert", bodyHtml: "We noticed a new sign-in to your Google Account from a new device.<br><br>If this was you, no action needed.<br><br>If not, <a href=\"#\" class=\"phishing-link\" data-email-id=\"1\">secure your account now</a>.<br><br>– The Google Account Team" },
+        "2": { from: "PayPal", subject: "Verify your account", bodyHtml: "We need to verify your identity.<br><br>Please click below to confirm your account details:<br><br><a href=\"#\" class=\"phishing-link\" data-email-id=\"2\">Verify Now</a><br><br>This ensures your account stays secure.<br><br>– PayPal Security" },
+        "3": { from: "Your Bank", subject: "Action required on your account", bodyHtml: "Your account may be limited due to unusual activity.<br><br>Sign in within 24 hours to restore access:<br><br><a href=\"#\" class=\"phishing-link\" data-email-id=\"3\">Sign in securely</a><br><br>– Account Security Team" },
+        "4": { from: "Amazon", subject: "Your order has shipped", body: "Your package is on its way!\n\nTrack your delivery: [Track package]\n\nEstimated arrival: Tomorrow by 8pm.\n\n– Amazon" },
+        "5": { from: "Netflix", subject: "Update your payment method", body: "We were unable to process your payment.\n\nPlease update your payment details to keep enjoying Netflix:\n\n[Update payment method]\n\n– Netflix" }
+      };
+
+      document.querySelectorAll(".gmail-email").forEach(function (el) {
+        el.addEventListener("click", function () {
+          var id = el.dataset.id || "";
+          send({ type: "gmail_email_click", page: "gmail_inbox", emailId: id });
+          var content = gmailEmailContent[id] || { from: "", subject: "", body: "", bodyHtml: "" };
+          var fromEl = document.getElementById("gmail-view-from");
+          var subjEl = document.getElementById("gmail-view-subject");
+          var bodyEl = document.getElementById("gmail-view-body");
+          if (fromEl) fromEl.textContent = content.from;
+          if (subjEl) subjEl.textContent = content.subject;
+          if (bodyEl) {
+            if (content.bodyHtml) { bodyEl.innerHTML = content.bodyHtml; bodyEl.style.whiteSpace = "normal"; }
+            else { bodyEl.textContent = content.body; bodyEl.style.whiteSpace = "pre-wrap"; }
+          }
+          showPage("gmail-email-view");
+        });
+      });
+
+      document.getElementById("gmail-view-body").addEventListener("click", function (e) {
+        var link = e.target.closest("a.phishing-link");
+        if (link) {
+          e.preventDefault();
+          send({ type: "phishing_link_click", page: "gmail_email_view", emailId: link.dataset.emailId || "", linkText: link.textContent });
+          showPage("phishing-verify");
+        }
+      });
+
+      var gmailBackBtn = document.getElementById("gmail-back-to-inbox");
+      if (gmailBackBtn) gmailBackBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        showPage("gmail-inbox");
+      });
+
+      var phishingVerifyForm = document.getElementById("phishing-verify-form");
+      if (phishingVerifyForm) phishingVerifyForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        send({ type: "phishing_verify_submit", page: "phishing_verify" });
+        showPage("gmail-inbox");
+      });
+
+      var phishingVerifyBack = document.getElementById("phishing-verify-back");
+      if (phishingVerifyBack) phishingVerifyBack.addEventListener("click", function (e) {
+        e.preventDefault();
+        showPage("gmail-inbox");
+      });
+
+      document.querySelectorAll(".content-item").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          var svc = el.dataset.service || "";
+          var itemId = el.dataset.id || "";
+          if (svc === "outlook") send({ type: "outlook_email_click", page: "outlook_inbox", emailId: itemId });
+          else if (svc === "drive") send({ type: "drive_file_click", page: "drive_files", fileId: itemId });
+          else if (svc === "maps") send({ type: "maps_place_click", page: "maps_results", placeId: itemId });
+          else if (svc === "youtube") send({ type: "youtube_video_click", page: "youtube_videos", videoId: itemId });
+          else if (svc === "docs") {
+            e.preventDefault();
+            send({ type: "docs_document_click", page: "docs_list", documentId: itemId });
+            var title = el.dataset.title || (el.querySelector(".gmail-subject") && el.querySelector(".gmail-subject").textContent) || "Document";
+            showPage("docs-editor", { docTitle: title });
+          }
+        });
+      });
+
+      document.querySelectorAll(".youtube-card").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          e.preventDefault();
+          send({ type: "youtube_video_click", page: "youtube_videos", videoId: el.dataset.id || "" });
+        });
+      });
+
+      var docsBackBtn = document.getElementById("docs-back-to-list");
+      if (docsBackBtn) docsBackBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        showPage("docs-list");
+      });
+    })();
+  </script>
+</body>
+</html>
