@@ -53,4 +53,4 @@ PhishingAIProject/
 
 ## Dissertation
 
-This project supports the PhishShield AI dissertation. Chapter drafts and figure sources are in the repo.
+This project supports the PhishShield AI dissertation.
