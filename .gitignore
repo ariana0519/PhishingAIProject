@@ -28,3 +28,17 @@ dist-ssr
 *.sw?
 
 .env
+
+# Dissertation / writing (code only on GitHub)
+CHAPTER_*
+figures/
+public/figures/
+A_STAR_PATTERNS*.md
+FIGURES_*.md
+GITHUB_SETUP.md
+METHODOLOGY_QUESTIONS*.md
+REFERENCES_*.md
+design-chapter-figures.html
+gantt-chart.html
+wireframes.html
+GITHUB_SETUP.md
