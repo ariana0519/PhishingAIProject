@@ -1,0 +1,11 @@
+flowchart LR
+  A["HTML phishing simulation<br/>Search + login flows"] --> B["JavaScript event listeners<br/>click, keydown, scroll depth<br/>timestamps + sessionId"]
+  B --> C["Backend service<br/>store events per session<br/>postsession analysis"]
+
+  classDef ui fill:#FFF7ED,stroke:#B45309,stroke-width:1.5px,color:#111;
+  classDef logic fill:#ECFDF5,stroke:#0F766E,stroke-width:1.5px,color:#111;
+  classDef data fill:#EEF2FF,stroke:#5B21B6,stroke-width:1.5px,color:#111;
+
+  class A ui;
+  class B logic;
+  class C data;

@@ -1,0 +1,5 @@
+flowchart LR
+  D["Delivery<br/>email, message, ad"] --> L["Link click"] --> P["Page load<br/>spoofed layout"] --> I["User interaction<br/>typing, clicking"] --> C["Credential capture<br/>form submission"] --> X["Exfiltration<br/>attacker server"]
+
+  classDef step fill:#F8FAFC,stroke:#1F4E79,stroke-width:1.5px,color:#111;
+  class D,L,P,I,C,X step;

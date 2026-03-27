@@ -1,0 +1,12 @@
+flowchart LR
+    subgraph Tester["Tester"]
+        I[Inputs<br/>Clicks, typing,<br/>scroll, etc.]
+    end
+    subgraph System["System (Black Box)"]
+        S[PhishShield AI<br/>Internal logic<br/>not visible]
+    end
+    subgraph Output["Observed Output"]
+        O[Dashboard<br/>Events, risk score,<br/>classifications]
+    end
+    I --> S
+    S --> O

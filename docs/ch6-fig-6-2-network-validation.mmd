@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph Browser["Browser (Chrome)"]
+        U[User actions on sim or test page]
+        D[DevTools Network tab]
+    end
+    subgraph Backend["Spring Boot API"]
+        P[POST /api/behavior-events]
+    end
+    U -->|events emitted| P
+    D -->|status codes and payloads observed| P

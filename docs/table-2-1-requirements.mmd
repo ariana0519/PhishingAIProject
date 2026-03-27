@@ -1,0 +1,62 @@
+%%{init: {"flowchart": {"htmlLabels": true}, "themeVariables": {"fontFamily": "Segoe UI, Arial, sans-serif"}}}%%
+flowchart LR
+  T["<div style='width:1200px;'>
+  <div style='font-weight:700; font-size:18px; margin-bottom:8px;'>Table 2.1 Requirements for the proposed solution</div>
+  <div style='font-size:13px; margin-bottom:12px;'>(FR = functional requirement; NFR = non functional requirement)</div>
+  <table style='border-collapse:collapse; width:1200px; font-size:12.5px;'>
+    <tr>
+      <th style='border:1px solid #111; padding:6px; text-align:left; background:#eef2ff;'>ID</th>
+      <th style='border:1px solid #111; padding:6px; text-align:left; background:#eef2ff;'>Type</th>
+      <th style='border:1px solid #111; padding:6px; text-align:left; background:#eef2ff;'>Requirement</th>
+      <th style='border:1px solid #111; padding:6px; text-align:left; background:#eef2ff;'>Justification</th>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>FR1</td>
+      <td style='border:1px solid #111; padding:6px;'>Functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Capture clicks, keypresses, scroll depth, and timing metrics during user sessions on the simulated phishing page</td>
+      <td style='border:1px solid #111; padding:6px;'>Behavioural signals correlate with exposure in the literature (Dhamija et al., 2006; Abdrabou et al., 2023)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>FR2</td>
+      <td style='border:1px solid #111; padding:6px;'>Functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Provide a simulated phishing environment that mimics search and login flows</td>
+      <td style='border:1px solid #111; padding:6px;'>Elicits realistic interaction without real world harm (Sheng et al., 2010)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>FR3</td>
+      <td style='border:1px solid #111; padding:6px;'>Functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Store behavioural events in a backend and aggregate them by session</td>
+      <td style='border:1px solid #111; padding:6px;'>Enables postsession analysis (Kapravelos et al., 2014)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>FR4</td>
+      <td style='border:1px solid #111; padding:6px;'>Functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Compute a risk score and classification (Normal, Moderate risk, Suspicious) using heuristic rules</td>
+      <td style='border:1px solid #111; padding:6px;'>Interpretable baseline before optional ML (Zhang et al., 2007)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>FR5</td>
+      <td style='border:1px solid #111; padding:6px;'>Functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Display risk score, classification, and contributing factors in a user facing dashboard</td>
+      <td style='border:1px solid #111; padding:6px;'>Responds to the communication gap identified in human factors work (Dhamija et al., 2006)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>NFR1</td>
+      <td style='border:1px solid #111; padding:6px;'>Non functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Minimal performance overhead on client side event capture</td>
+      <td style='border:1px solid #111; padding:6px;'>Lightweight instrumentation requirement (Wu et al., 2006)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>NFR2</td>
+      <td style='border:1px solid #111; padding:6px;'>Non functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Risk factors presented in plain language</td>
+      <td style='border:1px solid #111; padding:6px;'>Aligns with comprehensibility findings (Dhamija et al., 2006; Vishwanath et al., 2016)</td>
+    </tr>
+    <tr>
+      <td style='border:1px solid #111; padding:6px;'>NFR3</td>
+      <td style='border:1px solid #111; padding:6px;'>Non functional</td>
+      <td style='border:1px solid #111; padding:6px;'>Event driven analysis (on dashboard open or session end) rather than continuous real time processing</td>
+      <td style='border:1px solid #111; padding:6px;'>Balances timeliness with efficiency (Sheng et al., 2010)</td>
+    </tr>
+  </table>
+  </div>"]

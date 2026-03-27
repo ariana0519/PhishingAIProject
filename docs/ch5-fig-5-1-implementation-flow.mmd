@@ -1,0 +1,9 @@
+flowchart LR
+    subgraph Order["PhishShield AI implementation order (IID)"]
+        D[Design artefacts<br/>from Chapter 4]
+        S[Phishing sim HTML/JS<br/>DOM capture]
+        B[Spring Boot API<br/>H2 persistence]
+        U[Dashboard UI<br/>risk display]
+        I[Proxy + end-to-end<br/>manual checks]
+    end
+    D --> S --> B --> U --> I

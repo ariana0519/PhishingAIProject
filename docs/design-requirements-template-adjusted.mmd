@@ -1,0 +1,19 @@
+flowchart TB
+  V["Template adjustments for a clientless security prototype"]
+
+  subgraph Removed["Removed from stakeholder centric templates"]
+    R1["Originator or stakeholder sign off"]
+    R2["Customer satisfaction metrics"]
+    R3["Change history fields intended for enterprise projects"]
+  end
+
+  subgraph Added["Added or emphasised for PhishShield AI"]
+    A1["Privacy statement (no credential content stored)"]
+    A2["Performance constraint (low overhead during browsing)"]
+    A3["Interpretability requirement (plain language factors)"]
+    A4["Threat model notes (simulated phishing environment)"]
+    A5["Traceability to Table 2.1 and Chapter 1 objectives"]
+  end
+
+  V ==> Removed
+  V ==> Added

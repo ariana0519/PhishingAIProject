@@ -1,0 +1,22 @@
+flowchart TB
+  NFR["NFR example: Privacy preserving capture"]
+
+  subgraph DataMin["Data minimisation"]
+    D1["Do not store credential contents"]
+    D2["Store counts and timings, not raw text"]
+  end
+
+  subgraph Controls["Controls"]
+    C1["Event payload excludes key values"]
+    C2["SessionId is an anonymous identifier"]
+    C3["Retention limited to evaluation needs"]
+  end
+
+  subgraph Verification["Verification"]
+    V1["Inspect payload schema and stored rows"]
+    V2["Confirm dashboards show factors without exposing inputs"]
+  end
+
+  NFR ==> DataMin
+  NFR ==> Controls
+  NFR ==> Verification

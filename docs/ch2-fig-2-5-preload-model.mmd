@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph Preload["Preload checks (at or before page load)"]
+    U["URL reputation<br/>blacklists"]:::pre
+    T["TLS certificate validation"]:::pre
+    C["Content and layout signals<br/>brand similarity, forms"]:::pre
+  end
+
+  Preload --> L["Page loads"]:::mid --> G["Monitoring gap<br/>no continuous behavioural verification"]:::gap --> A["User actions<br/>scroll, click, type"]:::act
+
+  classDef pre fill:#EEF2FF,stroke:#1F4E79,stroke-width:1.5px,color:#111;
+  classDef mid fill:#F8FAFC,stroke:#374151,stroke-width:1.5px,color:#111;
+  classDef gap fill:#FEF2F2,stroke:#991B1B,stroke-width:1.5px,color:#111;
+  classDef act fill:#FFF7ED,stroke:#B45309,stroke-width:1.5px,color:#111;

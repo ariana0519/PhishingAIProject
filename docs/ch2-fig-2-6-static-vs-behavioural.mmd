@@ -1,0 +1,19 @@
+flowchart LR
+  subgraph Static["Static inspection (at load time)"]
+    S1["Sees URL and domain features"]:::s
+    S2["Sees HTML snapshot and visible content"]:::s
+    S3["Misses user attention and interaction sequence"]:::s
+    S4["Can be bypassed by delayed or conditional behaviour"]:::s
+  end
+
+  subgraph Behavioural["Behavioural observation (during session)"]
+    B1["Sees timing to first action"]:::b
+    B2["Sees scroll depth vs input intensity"]:::b
+    B3["Sees action rate and session duration"]:::b
+    B4["Supports interpretability through plain language factors"]:::b
+  end
+
+  Static --- Behavioural
+
+  classDef s fill:#EEF2FF,stroke:#1F4E79,stroke-width:1.5px,color:#111;
+  classDef b fill:#ECFDF5,stroke:#0F766E,stroke-width:1.5px,color:#111;

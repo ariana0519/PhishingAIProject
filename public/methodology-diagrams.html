@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 3: Methodology Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .diagram { margin: 2rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+    .diagram h2 { font-size: 1rem; margin: 0 0 1rem 0; color: #333; }
+    .mermaid { display: flex; justify-content: center; }
+    .caption { font-size: 0.875rem; color: #666; margin-top: 0.5rem; }
+    button { background: #1a73e8; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem; }
+    button:hover { background: #1557b0; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 3: Methodology Diagrams</h1>
+  <p>Open this page in your browser. Right-click each diagram and choose "Save image as..." or use a screenshot tool to capture. Or run <code>node scripts/export-flowcharts-png.mjs</code> to generate PNGs.</p>
+
+  <div class="diagram" id="fig1">
+    <h2>Figure 3.1: IID Cycle</h2>
+    <div class="mermaid">
+flowchart LR
+    subgraph IID["Iterative & Incremental Development Cycle"]
+        A[Design] --> B[Implement]
+        B --> C[Test]
+        C --> D[Reflect]
+        D --> E[Adjust]
+        E --> B
+    end
+    </div>
+    <p class="caption">Figure 3.1 The iterative cycle: Design → Implement → Test → Reflect → Adjust (Larman and Basili, 2003).</p>
+  </div>
+
+  <div class="diagram" id="fig2">
+    <h2>Figure 3.2: Development Increments</h2>
+    <div class="mermaid">
+flowchart LR
+    subgraph Increments["PhishShield AI Development Increments"]
+        I1[Increment 1<br/>Phishing sim +<br/>event capture]
+        I2[Increment 2<br/>Backend<br/>integration]
+        I3[Increment 3<br/>Risk scoring +<br/>heuristics]
+        I4[Increment 4<br/>Dashboard]
+        I1 --> I2 --> I3 --> I4
+    end
+    </div>
+    <p class="caption">Figure 3.2 The four development increments delivered in sequence.</p>
+  </div>
+
+  <div class="diagram" id="fig3">
+    <h2>Figure 3.3: Methodology Selection</h2>
+    <div class="mermaid">
+flowchart TD
+    subgraph Candidates["Methodology Candidates"]
+        W[Waterfall<br/>Linear, sequential]
+        S[Spiral<br/>Risk analysis, iteration]
+        L[Lean<br/>Minimise waste, rapid delivery]
+        A[Agile<br/>Iterative, team-based]
+    end
+    subgraph Selected["Selected"]
+        IID[IID<br/>Iterative & Incremental<br/>Solo-friendly, no ceremonies]
+    end
+    W -.->|Rejected: rigid| IID
+    S -.->|Rejected: too much process| IID
+    L -.->|Rejected: lacks documentation focus| IID
+    A -.->|Rejected: team ceremonies| IID
+    </div>
+    <p class="caption">Figure 3.3 Methodology candidates considered and why IID was selected.</p>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 6: Testing Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.5rem; }
+    .diagram { margin: 2rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+    .diagram h2 { font-size: 1rem; margin: 0 0 1rem 0; }
+    .mermaid { display: flex; justify-content: center; }
+    .caption { font-size: 0.875rem; color: #666; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 6: Testing Diagrams</h1>
+  <p>Open in browser and screenshot, or run <code>node scripts/export-flowcharts-png.mjs</code> to export PNGs.</p>
+
+  <div class="diagram">
+    <h2>Figure 6.1: Black Box Testing Model</h2>
+    <div class="mermaid">
+flowchart LR
+    subgraph Tester["Tester"]
+        I[Inputs: Clicks, typing, scroll]
+    end
+    subgraph System["System (Black Box)"]
+        S[PhishShield AI<br/>Internal logic not visible]
+    end
+    subgraph Output["Observed Output"]
+        O[Dashboard: Events, risk score]
+    end
+    I --> S
+    S --> O
+    </div>
+    <p class="caption">Figure 6.1 Black box testing: inputs are applied, outputs are observed; internal logic is not inspected.</p>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+</body>
+</html>

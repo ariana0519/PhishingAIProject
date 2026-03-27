@@ -1,0 +1,57 @@
+classDiagram
+direction LR
+
+class Session {
+  +String sessionId
+  +DateTime createdAt
+}
+
+class BehaviourEvent {
+  +Long id
+  +String sessionId
+  +DateTime receivedAt
+  +String eventType
+  +String payloadJson
+}
+
+class AnalysisResult {
+  +Long id
+  +String sessionId
+  +DateTime computedAt
+  +int score
+  +String classification
+  +String factorsJson
+}
+
+class Factor {
+  +String name
+  +String description
+  +int points
+}
+
+class SessionSummary {
+  +String sessionId
+  +int clickCount
+  +int keypressCount
+  +int maxScrollDepth
+  +int firstInteractionMs
+  +int sessionDurationMs
+}
+
+class EventAggregator {
+  +SessionSummary summarise(List~BehaviourEvent~ events)
+}
+
+class RiskScoringEngine {
+  +AnalysisResult compute(List~BehaviourEvent~ events)
+}
+
+Session "1" ..> "0..*" BehaviourEvent : contains
+Session "1" ..> "0..1" AnalysisResult : produces
+AnalysisResult "1" ..> "0..*" Factor : factors
+
+EventAggregator ..> BehaviourEvent : reads
+EventAggregator ..> SessionSummary : builds
+RiskScoringEngine ..> BehaviourEvent : reads
+RiskScoringEngine ..> SessionSummary : uses
+RiskScoringEngine ..> AnalysisResult : outputs

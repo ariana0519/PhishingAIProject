@@ -1,0 +1,31 @@
+flowchart TB
+  T["Requirements Specification Template (adapted for PhishShield AI)"]
+
+  subgraph Meta["Metadata"]
+    M1["ID"]
+    M2["Name"]
+    M3["Type (Functional or Non functional)"]
+    M4["Priority (Must, Should, Could)"]
+  end
+
+  subgraph Context["Context"]
+    C1["Rationale and source (Chapter 2)"]
+    C2["Assumptions and constraints"]
+    C3["Dependencies"]
+  end
+
+  subgraph Definition["Definition"]
+    D1["Description"]
+    D2["Inputs and outputs"]
+    D3["Success criteria"]
+  end
+
+  subgraph Verification["Verification"]
+    V1["How it will be tested"]
+    V2["Acceptance notes"]
+  end
+
+  T ==> Meta
+  T ==> Context
+  T ==> Definition
+  T ==> Verification

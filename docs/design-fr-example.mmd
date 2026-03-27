@@ -1,0 +1,26 @@
+flowchart TB
+  FR["FR example: Capture and submit behavioural events"]
+
+  subgraph Trigger["Trigger"]
+    T1["User interacts with phishing simulation"]
+  end
+
+  subgraph Capture["Capture"]
+    C1["Record event type (click, keydown, scroll depth, first interaction)"]
+    C2["Attach sessionId and timestamp"]
+    C3["Apply privacy rule (no typed values stored)"]
+  end
+
+  subgraph Submit["Submit"]
+    S1["POST event to backend endpoint"]
+    S2["Retry or use beacon when page unloads"]
+  end
+
+  subgraph Result["Result"]
+    O1["Backend persists event for session analysis"]
+  end
+
+  FR ==> Trigger
+  Trigger ==> Capture
+  Capture ==> Submit
+  Submit ==> Result

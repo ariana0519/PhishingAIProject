@@ -1,0 +1,14 @@
+flowchart TD
+    subgraph Candidates["Methodology Candidates"]
+        W[Waterfall<br/>Linear, sequential]
+        S[Spiral<br/>Risk analysis, iteration]
+        L[Lean<br/>Minimise waste, rapid delivery]
+        A[Agile<br/>Iterative, team-based]
+    end
+    subgraph Selected["Selected"]
+        IID[IID<br/>Iterative & Incremental<br/>Solo-friendly, no ceremonies]
+    end
+    W -.->|Rejected: rigid| IID
+    S -.->|Rejected: too much process| IID
+    L -.->|Rejected: lacks documentation focus| IID
+    A -.->|Rejected: team ceremonies| IID

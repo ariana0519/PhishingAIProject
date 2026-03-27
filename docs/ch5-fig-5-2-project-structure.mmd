@@ -1,0 +1,18 @@
+flowchart TB
+    subgraph Client["Static client (public/)"]
+        PS["phishing-sim.html"]
+        DB["dashboard.html"]
+        TE["test-events.html"]
+    end
+    subgraph Dev["Vite dev server"]
+        VP["vite.config.ts proxy:<br/>/backend → localhost:8080"]
+    end
+    subgraph Server["Backend (separate process)"]
+        SB["Spring Boot REST API"]
+        H2["H2 database"]
+    end
+    PS --> VP
+    DB --> VP
+    TE --> VP
+    VP --> SB
+    SB --> H2

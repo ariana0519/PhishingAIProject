@@ -1,0 +1,9 @@
+flowchart TB
+  subgraph Store["Persistence model"]
+    SESS["Session\nsessionId\ncreatedAt"]
+    EVT["BehaviourEvent\nid\nsessionId (FK)\nreceivedAt\neventType\npayloadJson"]
+    RES["AnalysisResult\nid\nsessionId (FK)\ncomputedAt\nscore\nclassification\nfactorsJson"]
+  end
+
+  SESS ==> EVT
+  SESS ==> RES
